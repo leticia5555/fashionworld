@@ -1168,17 +1168,34 @@ function buildStoreFacade(storeId) {
     gp.position.set(x,1.5,0.12); g.add(gp);
   });
 
+  // Store-specific FRONT FACADE color — what you see walking up
+  var frontColor = storeId==='icony'   ? 0x2A2420 :
+                   storeId==='zara'    ? 0xF5F3EF :
+                   storeId==='mango'   ? 0x8B5E3C :
+                   storeId==='revolve' ? 0x1A0D14 :
+                   0xEEEEEE;
+  var frontM = new THREE.MeshStandardMaterial({
+    color: frontColor, roughness: 0.7,
+    emissive: new THREE.Color(frontColor), emissiveIntensity: 0.2
+  });
+
+  // Large front facade panels (what you actually see)
+  var leftPanel = new THREE.Mesh(new THREE.BoxGeometry(2.8,4.2,0.08), frontM);
+  leftPanel.position.set(-2.4,2.1,0.05); g.add(leftPanel);
+  var rightPanel = new THREE.Mesh(new THREE.BoxGeometry(2.8,4.2,0.08), frontM);
+  rightPanel.position.set(2.4,2.1,0.05); g.add(rightPanel);
+
   // Door frame
   var df=new THREE.Mesh(new THREE.BoxGeometry(2.6,3.0,0.06),
     new THREE.MeshStandardMaterial({color:store.signColor,roughness:0.3,metalness:0.3}));
   df.position.set(0,1.5,0.1); g.add(df);
-  var dfi=new THREE.Mesh(new THREE.BoxGeometry(2.46,2.86,0.06),wallM);
+  var dfi=new THREE.Mesh(new THREE.BoxGeometry(2.46,2.86,0.06),frontM);
   dfi.position.set(0,1.5,0.08); g.add(dfi);
 
   // Sign
-  var signBg=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.38,0.06),
-    new THREE.MeshStandardMaterial({color:store.signColor,roughness:0.8,
-    emissive:new THREE.Color(store.signColor),emissiveIntensity:0.4}));
+  var signBg=new THREE.Mesh(new THREE.BoxGeometry(4.2,0.55,0.08),
+    new THREE.MeshStandardMaterial({color:store.signColor,roughness:0.6,
+    emissive:new THREE.Color(store.signColor),emissiveIntensity:0.8}));
   signBg.position.set(0,3.5,0.12); g.add(signBg);
 
   var signGlowM=new THREE.MeshStandardMaterial({color:store.signGlow,
@@ -1186,8 +1203,8 @@ function buildStoreFacade(storeId) {
   var signGlow=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.04,0.02),signGlowM);
   signGlow.position.set(0,3.72,0.13); g.add(signGlow);
 
-  var sl=new THREE.PointLight(store.signGlow,1.2,4);
-  sl.position.set(0,3.5,0.5); g.add(sl);
+  var sl=new THREE.PointLight(store.signGlow,3.0,6);
+  sl.position.set(0,3.5,1.0); g.add(sl);
 
   // Side walls
   [-3,3].forEach(function(x){
@@ -1207,16 +1224,28 @@ function buildStoreFacade(storeId) {
     emissive:new THREE.Color(store.wallColor),emissiveIntensity:0.08}));
   intWall.position.set(0,2.0,-2.8); g.add(intWall);
 
-  // Mannequin (all stores)
-  var mannM=new THREE.MeshStandardMaterial({color:0xC4B9A8,roughness:0.7,metalness:0.1});
-  var mb=new THREE.Mesh(new THREE.CylinderGeometry(0.11,0.09,1.0,10),mannM);
-  mb.position.set(-1.8,0.9,0.15); g.add(mb);
-  var mh=new THREE.Mesh(new THREE.SphereGeometry(0.09,10,8),mannM);
-  mh.position.set(-1.8,1.55,0.15); g.add(mh);
-  // Dress on mannequin
-  var mannDress=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.7,8),
-    new THREE.MeshStandardMaterial({color:store.dressColors[0],roughness:0.6}));
-  mannDress.position.set(-1.8,0.6,0.15); g.add(mannDress);
+  // Mannequin — visible from outside
+  var mannM=new THREE.MeshStandardMaterial({color:0xD4C8B8,roughness:0.5,metalness:0.1,emissive:0xD4C8B8,emissiveIntensity:0.1});
+  // Stand
+  var mstand=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.12,0.08,8),mannM);
+  mstand.position.set(1.2,0.04,0.15); g.add(mstand);
+  var mpole=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.4,8),mannM);
+  mpole.position.set(1.2,0.74,0.15); g.add(mpole);
+  // Body
+  var mb=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.11,0.65,10),mannM);
+  mb.position.set(1.2,1.12,0.15); g.add(mb);
+  // Shoulders
+  var msh=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.13,0.12,10),mannM);
+  msh.position.set(1.2,1.48,0.15); g.add(msh);
+  // Head
+  var mh=new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8),mannM);
+  mh.position.set(1.2,1.66,0.15); g.add(mh);
+  // Dress — full cone skirt very visible
+  var dressM=new THREE.MeshStandardMaterial({color:store.dressColors[0],roughness:0.4,emissive:new THREE.Color(store.dressColors[0]),emissiveIntensity:0.3});
+  var mannDress=new THREE.Mesh(new THREE.ConeGeometry(0.35,0.85,12),dressM);
+  mannDress.position.set(1.2,0.72,0.15); g.add(mannDress);
+  var bodice=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,0.4,10),dressM);
+  bodice.position.set(1.2,1.2,0.15); g.add(bodice);
 
   // Color rack
   store.dressColors.forEach(function(col,i){
