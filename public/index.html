@@ -1146,7 +1146,6 @@ var STORE_POSITIONS = {
   zara:    {x:-10, z:0,   ry:Math.PI/2},
   mango:   {x:10,  z:0,   ry:-Math.PI/2},
   revolve: {x:0,   z:8,   ry:Math.PI},
-  hm:      {x:-8,  z:-6,  ry:Math.PI*0.65},
 };
 
 function buildStoreFacade(storeId) {
@@ -1563,47 +1562,52 @@ Object.keys(STORE_POSITIONS).forEach(function(id) {
   var store = STORES[id];
   var pos = STORE_POSITIONS[id];
 
-  // Create canvas texture with store name
+  // Create canvas texture with store name — HIGH CONTRAST
   var canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 128;
+  canvas.width = 1024; canvas.height = 256;
   var ctx = canvas.getContext('2d');
 
-  // Background
-  ctx.fillStyle = '#EDE8E3';
-  ctx.fillRect(0, 0, 512, 128);
+  // Dark background
+  ctx.fillStyle = '#1A1714';
+  ctx.fillRect(0, 0, 1024, 256);
 
-  // Store name text
-  ctx.fillStyle = '#2A2825';
-  ctx.font = '500 52px "DM Sans", sans-serif';
+  // Gold border
+  ctx.strokeStyle = '#C8A96E';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(12, 12, 1000, 232);
+
+  // Store name text — BIG BRIGHT WHITE
+  ctx.fillStyle = '#EDE8E3';
+  ctx.font = 'bold 110px "DM Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.letterSpacing = '8px';
-  ctx.fillText(store.name, 256, 64);
+  ctx.fillText(store.name, 512, 128);
 
-  // Gold underline
+  // Small tagline below
   ctx.fillStyle = '#C8A96E';
-  ctx.fillRect(180, 90, 152, 2);
+  ctx.font = '28px "DM Sans", sans-serif';
+  ctx.fillText('◆  FASHIONWORLD  ◆', 512, 210);
 
   var texture = new THREE.CanvasTexture(canvas);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+
   var signMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.5, 0.7),
-    new THREE.MeshStandardMaterial({
+    new THREE.PlaneGeometry(4.5, 1.1),
+    new THREE.MeshBasicMaterial({
       map: texture,
-      emissiveMap: texture,
-      emissive: new THREE.Color(0xFFFFFF),
-      emissiveIntensity: 0.6,
-      roughness: 0.5
+      transparent: false
     })
   );
 
   // Position above store entrance, facing outward
-  var offsetDist = 0.3;
+  var offsetDist = 0.5;
   signMesh.position.set(
     pos.x + Math.sin(pos.ry) * offsetDist,
-    4.3,
+    3.9,
     pos.z + Math.cos(pos.ry) * offsetDist
   );
-  signMesh.rotation.y = pos.ry;
+  signMesh.rotation.y = pos.ry + Math.PI;
   scene.add(signMesh);
 });
 
@@ -1642,7 +1646,6 @@ var proxTargets=[
   {pos:new THREE.Vector3(-10,0,0),  name:'ZARA',    id:'zara',    type:'store'},
   {pos:new THREE.Vector3(10,0,0),   name:'MANGO',   id:'mango',   type:'store'},
   {pos:new THREE.Vector3(0,0,8),    name:'REVOLVE', id:'revolve', type:'store'},
-  {pos:new THREE.Vector3(-8,0,-6),  name:'H&M',     id:'hm',      type:'store'},
   {pos:new THREE.Vector3(0,0,0),    name:'Mood Board',id:'mood',  type:'room'},
 ];
 
