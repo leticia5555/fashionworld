@@ -768,13 +768,13 @@ renderer.toneMappingExposure=0.95;
 
 var scene=new THREE.Scene();
 scene.background=new THREE.Color(0x1a1917);
-scene.fog=new THREE.FogExp2(0x1a1917,0.008);
+scene.fog=new THREE.FogExp2(0x2E2A26,0.004);
 
 var camera=new THREE.PerspectiveCamera(70,W/H,0.05,80);
 camera.position.set(0,1.65,8);
 
 // ── LIGHTS ─────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xFFF8F0, 2.5));
+scene.add(new THREE.AmbientLight(0xFFF8F0, 3.0));
 
 // Main warm overhead
 var sun=new THREE.DirectionalLight(0xFFF5E0,0.8);
@@ -937,7 +937,7 @@ var base2=base1.clone(); base2.position.set(0,0.03,11.98); scene.add(base2);
 // ── MALL ATMOSPHERE ───────────────────────────────────────────────────
 
 // Better background — deep warm dark
-scene.background = new THREE.Color(0x1A1714);
+scene.background = new THREE.Color(0x2E2A26);
 scene.fog = new THREE.FogExp2(0x0E0C0A, 0.022);
 
 // Upgrade floor — dark marble with reflection
@@ -954,9 +954,19 @@ scene.children.forEach(function(c) {
 
 // Central mall corridor lighting — warm golden spots
 // Single ambient + directional instead of point lights
-var mainLight = new THREE.DirectionalLight(0xFFE8D0, 1.2);
-mainLight.position.set(0, 8, 0);
+var mainLight = new THREE.DirectionalLight(0xFFE8D0, 2.0);
+mainLight.position.set(2, 6, 4);
 scene.add(mainLight);
+
+// Front fill light — illuminates store facades facing camera
+var frontLight = new THREE.DirectionalLight(0xFFF5E0, 1.5);
+frontLight.position.set(0, 3, 10);
+scene.add(frontLight);
+
+// Back light for REVOLVE
+var backLight = new THREE.DirectionalLight(0xFFD4D0, 1.0);
+backLight.position.set(0, 3, -10);
+scene.add(backLight);
 
 // Accent lights — colored glows near stores
 // accent lights removed for performance
@@ -1169,7 +1179,13 @@ function buildStoreFacade(storeId) {
   var pos = STORE_POSITIONS[storeId];
   var g = new THREE.Group();
 
-  var wallM = new THREE.MeshStandardMaterial({color:store.wallColor,roughness:0.9});
+  // Make facade more visible against dark background
+  var facadeColor = storeId === 'icony' ? 0x3A3530 :
+                    storeId === 'zara' ? 0xF0EDE8 :
+                    storeId === 'mango' ? 0x5A3F28 :
+                    storeId === 'revolve' ? 0x1A0A10 :
+                    0xEEEEEE;
+  var wallM = new THREE.MeshStandardMaterial({color:facadeColor, roughness:0.8, emissive:new THREE.Color(facadeColor), emissiveIntensity:0.15});
   var goldM2 = new THREE.MeshStandardMaterial({color:0xC8A96E,roughness:0.1,metalness:0.9});
 
   // ── SHARED FACADE ELEMENTS ────────────────────────────────────────
@@ -1197,7 +1213,7 @@ function buildStoreFacade(storeId) {
   signBg.position.set(0,3.5,0.12); g.add(signBg);
 
   var signGlowM=new THREE.MeshStandardMaterial({color:store.signGlow,
-    emissive:new THREE.Color(store.signGlow),emissiveIntensity:2.5,roughness:0.1});
+    emissive:new THREE.Color(store.signGlow),emissiveIntensity:4.0,roughness:0.1});
   var signGlow=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.04,0.02),signGlowM);
   signGlow.position.set(0,3.72,0.13); g.add(signGlow);
 
