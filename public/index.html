@@ -765,17 +765,17 @@ renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.NoToneMapping;
 
 var scene=new THREE.Scene();
-scene.background=new THREE.Color(0x3A3530);
-scene.fog=new THREE.FogExp2(0x3A3530,0.003);
+scene.background=new THREE.Color(0x1C1916);
+scene.fog=new THREE.FogExp2(0x1C1916,0.006);
 
 var camera=new THREE.PerspectiveCamera(70,W/H,0.05,80);
 camera.position.set(0,1.7,5);
 
 // ── LIGHTS ─────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xFFFFFF, 4.5));
+scene.add(new THREE.AmbientLight(0xFFF5E8, 2.2));
 
 // Main warm overhead
-var sun=new THREE.DirectionalLight(0xFFFFFF,2.0);
+var sun=new THREE.DirectionalLight(0xFFF5E0,1.2);
 sun.position.set(2,8,4);
 sun.castShadow=false;
 sun.shadow.mapSize.set(1024,1024);
@@ -785,23 +785,23 @@ sun.shadow.camera.far=40; sun.shadow.bias=-0.001;
 scene.add(sun);
 
 // Warm fill
-var fill=new THREE.DirectionalLight(0xFFFFFF,1.5);
+var fill=new THREE.DirectionalLight(0xFFE8D0,1.0);
 fill.position.set(0,5,10);
 scene.add(fill);
-var fill2=new THREE.DirectionalLight(0xFFEEDD,1.2);
+var fill2=new THREE.DirectionalLight(0xFFE8D0,0.8);
 fill2.position.set(0,5,-10);
 scene.add(fill2);
-var fill3=new THREE.DirectionalLight(0xFFFFFF,1.0);
+var fill3=new THREE.DirectionalLight(0xFFE8D0,0.6);
 fill3.position.set(10,5,0);
 scene.add(fill3);
-var fill4=new THREE.DirectionalLight(0xFFFFFF,1.0);
+var fill4=new THREE.DirectionalLight(0xFFE8D0,0.6);
 fill4.position.set(-10,5,0);
 scene.add(fill4);
 
 // ── MATERIALS ──────────────────────────────────────────────────────────
 // ICONY palette: blush bg, charcoal walls, gold accents
 var wallM  = new THREE.MeshStandardMaterial({color:0x2A2825,roughness:0.9,metalness:0.02});
-var floorM = new THREE.MeshStandardMaterial({color:0xD4CEC8,roughness:0.15,metalness:0.02});
+var floorM = new THREE.MeshStandardMaterial({color:0x2A2520,roughness:0.05,metalness:0.3});
 var blushM = new THREE.MeshStandardMaterial({color:0xEDE8E3,roughness:0.9,metalness:0});
 var goldM  = new THREE.MeshStandardMaterial({color:0xC8A96E,roughness:0.2,metalness:0.8});
 var mirrorM= new THREE.MeshStandardMaterial({color:0xD4D0CC,roughness:0.02,metalness:0.9,envMapIntensity:1});
@@ -814,14 +814,14 @@ var floor=new THREE.Mesh(new THREE.PlaneGeometry(28,24),floorM);
 floor.rotation.x=-Math.PI/2; floor.receiveShadow=false; scene.add(floor);
 
 // Subtle tile grid
-var grid=new THREE.GridHelper(28,36,0xC0BAB4,0xC0BAB4);
+var grid=new THREE.GridHelper(28,36,0x3A3530,0x3A3530);
 grid.position.y=0.002; grid.material.opacity=0.25; grid.material.transparent=true;
 scene.add(grid);
 
 // // ── LUXURY MALL ARCHITECTURE ─────────────────────────────────────────
 
 // Ceiling — dark with glass skylight panels
-var ceilM = new THREE.MeshStandardMaterial({color:0x0A0908, roughness:0.95});
+var ceilM = new THREE.MeshStandardMaterial({color:0x0A0806, roughness:0.95});
 var ceil = new THREE.Mesh(new THREE.PlaneGeometry(30,26), ceilM);
 ceil.rotation.x = Math.PI/2; ceil.position.y = 5.0; scene.add(ceil);
 
@@ -852,7 +852,7 @@ var moldingM = new THREE.MeshStandardMaterial({color:0xC8A96E, roughness:0.2, me
 });
 
 // Walls — dark luxury panels with wainscoting
-var wallPanelM = new THREE.MeshStandardMaterial({color:0x0E0C0A, roughness:0.85});
+var wallPanelM = new THREE.MeshStandardMaterial({color:0x141210, roughness:0.85});
 var wallTrimM = new THREE.MeshStandardMaterial({color:0x1E1A16, roughness:0.7});
 
 var endWalls = [
@@ -1030,7 +1030,7 @@ var benchPositions = [[-4,0,0],[4,0,0]];
 benchPositions.forEach(function(p) {
   var seat = new THREE.Mesh(
     new THREE.BoxGeometry(1.6, 0.1, 0.5),
-    new THREE.MeshStandardMaterial({color:0x2A2422, roughness:0.8, metalness:0.2})
+    new THREE.MeshStandardMaterial({color:0x1E1A16, roughness:0.9, metalness:0.1})
   );
   seat.position.set(p[0], 0.45, p[2]);
   scene.add(seat);
@@ -1170,10 +1170,10 @@ function buildStoreFacade(storeId) {
 
   // Store-specific FRONT FACADE color — what you see walking up
   var frontColor = storeId==='icony'   ? 0x2A2420 :
-                   storeId==='zara'    ? 0xF5F3EF :
-                   storeId==='mango'   ? 0x8B5E3C :
-                   storeId==='revolve' ? 0x1A0D14 :
-                   0xEEEEEE;
+                   storeId==='zara'    ? 0xE8E5E0 :
+                   storeId==='mango'   ? 0x6B3E26 :
+                   storeId==='revolve' ? 0x120810 :
+                   0xDDDDDD;
   var frontM = new THREE.MeshStandardMaterial({
     color: frontColor, roughness: 0.7,
     emissive: new THREE.Color(frontColor), emissiveIntensity: 0.2
@@ -1499,7 +1499,7 @@ function buildStoreFacade(storeId) {
     backPanel.position.set(0,2.0,-2.72); g.add(backPanel);
 
     // Red horizontal stripe
-    var redM=new THREE.MeshStandardMaterial({color:0xCC0000,roughness:0.7,emissive:0x880000,emissiveIntensity:0.2});
+    var redM=new THREE.MeshStandardMaterial({color:0xAA0000,roughness:0.8,emissive:0x440000,emissiveIntensity:0.1});
     var redStripe=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.12,0.04),redM);
     redStripe.position.set(0,3.2,-2.70); g.add(redStripe);
     var redStripe2=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.12,0.04),redM);
