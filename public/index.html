@@ -72,7 +72,7 @@ body.locked #xhair{opacity:1}
 #storebody{flex:1;display:flex;overflow:hidden;min-height:0}
 
 /* Product grid */
-#prodgrid{flex:1;overflow-y:auto;padding:16px 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;background:#F5F2EE;align-content:start}
+#prodgrid{flex:1;overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;background:#F0EDE8;align-content:start}
 .pcard{background:#FAFAF8;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;border-radius:8px;overflow:hidden;border:1px solid rgba(58,56,53,.1);box-shadow:0 1px 4px rgba(0,0,0,.06)}
 .pcard:hover{background:#F5F2EE;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
 .pswatch{width:100%;height:180px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#F0EDE8}
@@ -768,13 +768,13 @@ renderer.toneMappingExposure=0.95;
 
 var scene=new THREE.Scene();
 scene.background=new THREE.Color(0x1a1917);
-scene.fog=new THREE.FogExp2(0x1a1917,0.012);
+scene.fog=new THREE.FogExp2(0x1a1917,0.008);
 
 var camera=new THREE.PerspectiveCamera(70,W/H,0.05,80);
 camera.position.set(0,1.65,8);
 
 // ── LIGHTS ─────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xFFF8F0, 1.2));
+scene.add(new THREE.AmbientLight(0xFFF8F0, 2.5));
 
 // Main warm overhead
 var sun=new THREE.DirectionalLight(0xFFF5E0,0.8);
@@ -937,7 +937,7 @@ var base2=base1.clone(); base2.position.set(0,0.03,11.98); scene.add(base2);
 // ── MALL ATMOSPHERE ───────────────────────────────────────────────────
 
 // Better background — deep warm dark
-scene.background = new THREE.Color(0x0E0C0A);
+scene.background = new THREE.Color(0x1A1714);
 scene.fog = new THREE.FogExp2(0x0E0C0A, 0.022);
 
 // Upgrade floor — dark marble with reflection
