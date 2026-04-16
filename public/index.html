@@ -72,18 +72,18 @@ body.locked #xhair{opacity:1}
 #storebody{flex:1;display:flex;overflow:hidden;min-height:0}
 
 /* Product grid */
-#prodgrid{flex:1;overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;background:rgba(58,56,53,.03);align-content:start}
-.pcard{background:#EDE8E3;cursor:pointer;transition:background .15s;display:flex;flex-direction:column;border-radius:6px;overflow:hidden;border:1px solid rgba(58,56,53,.06)}
-.pcard:hover{background:#E5E0DA}
-.pswatch{width:100%;aspect-ratio:3/4;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.pswatchbg{position:absolute;inset:0}
+#prodgrid{flex:1;overflow-y:auto;padding:16px 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;background:#F5F2EE;align-content:start}
+.pcard{background:#FAFAF8;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;border-radius:8px;overflow:hidden;border:1px solid rgba(58,56,53,.1);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pcard:hover{background:#F5F2EE;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.pswatch{width:100%;height:180px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#F0EDE8}
+.pswatchbg{position:absolute;inset:0;width:100%;height:100%}
 .pemoji{position:relative;z-index:1;font-size:48px}
 .pinfo{padding:14px 16px;display:flex;flex-direction:column;gap:4px}
 .pname{font-size:12px;font-weight:500;color:#3A3835;letter-spacing:.04em}
 .pdesc{font-size:10px;color:#9a9590;letter-spacing:.03em}
 .pprice{font-size:13px;font-weight:500;color:#3A3835;margin-top:2px}
 .padd{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#C8A96E;padding:10px 0 2px;border-top:1px solid rgba(58,56,53,.08);margin-top:4px;cursor:pointer;transition:color .15s}
-.padd:hover{color:#3A3835}
+.padd:hover{background:#C8A96E}
 .padd.done{color:#3A3835}
 
 /* Fitting room panel */
@@ -774,7 +774,7 @@ var camera=new THREE.PerspectiveCamera(70,W/H,0.05,80);
 camera.position.set(0,1.65,8);
 
 // ── LIGHTS ─────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xFFF8F0,0.5));
+scene.add(new THREE.AmbientLight(0xFFF8F0, 1.2));
 
 // Main warm overhead
 var sun=new THREE.DirectionalLight(0xFFF5E0,0.8);
@@ -811,21 +811,113 @@ var grid=new THREE.GridHelper(28,36,0xC0BAB4,0xC0BAB4);
 grid.position.y=0.002; grid.material.opacity=0.25; grid.material.transparent=true;
 scene.add(grid);
 
-// Ceiling — blush
-var ceil=new THREE.Mesh(new THREE.PlaneGeometry(28,24),new THREE.MeshStandardMaterial({color:0xEDE8E3,roughness:1}));
-ceil.rotation.x=Math.PI/2; ceil.position.y=4.2; scene.add(ceil);
+// // ── LUXURY MALL ARCHITECTURE ─────────────────────────────────────────
 
-// End walls
-var endWalls=[
-  {w:28,h:4.2,p:[0,2.1,-12],ry:0},
-  {w:28,h:4.2,p:[0,2.1,12],ry:Math.PI},
-  {w:24,h:4.2,p:[-14,2.1,0],ry:Math.PI/2},
-  {w:24,h:4.2,p:[14,2.1,0],ry:-Math.PI/2}
+// Ceiling — dark with glass skylight panels
+var ceilM = new THREE.MeshStandardMaterial({color:0x0A0908, roughness:0.95});
+var ceil = new THREE.Mesh(new THREE.PlaneGeometry(30,26), ceilM);
+ceil.rotation.x = Math.PI/2; ceil.position.y = 5.0; scene.add(ceil);
+
+// Skylight panels — glowing glass strips in ceiling
+var skylightM = new THREE.MeshStandardMaterial({
+  color:0xFFE8C0, emissive:0xFFE8C0, emissiveIntensity:0.6,
+  transparent:true, opacity:0.7, roughness:0.0
+});
+[-4,4].forEach(function(x) {
+  var skylight = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 20), skylightM);
+  skylight.rotation.x = Math.PI/2;
+  skylight.position.set(x, 4.95, 0);
+  scene.add(skylight);
+// skylight point light removed
+});
+
+// Ceiling crown molding strip
+var moldingM = new THREE.MeshStandardMaterial({color:0xC8A96E, roughness:0.2, metalness:0.8});
+[-14,14].forEach(function(x) {
+  var molding = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 26), moldingM);
+  molding.position.set(x, 4.9, 0);
+  scene.add(molding);
+});
+[-12,12].forEach(function(z) {
+  var molding2 = new THREE.Mesh(new THREE.BoxGeometry(30, 0.15, 0.15), moldingM);
+  molding2.position.set(0, 4.9, z);
+  scene.add(molding2);
+});
+
+// Walls — dark luxury panels with wainscoting
+var wallPanelM = new THREE.MeshStandardMaterial({color:0x0E0C0A, roughness:0.85});
+var wallTrimM = new THREE.MeshStandardMaterial({color:0x1E1A16, roughness:0.7});
+
+var endWalls = [
+  {w:30,h:5.0,p:[0,2.5,-13],ry:0},
+  {w:30,h:5.0,p:[0,2.5,13],ry:Math.PI},
+  {w:26,h:5.0,p:[-14,2.5,0],ry:Math.PI/2},
+  {w:26,h:5.0,p:[14,2.5,0],ry:-Math.PI/2}
 ];
-endWalls.forEach(function(d){
-  var m=new THREE.Mesh(new THREE.PlaneGeometry(d.w,d.h),wallM);
-  m.rotation.y=d.ry; m.position.set(d.p[0],d.p[1],d.p[2]);
-  m.receiveShadow=false; scene.add(m);
+endWalls.forEach(function(d) {
+  var m = new THREE.Mesh(new THREE.PlaneGeometry(d.w, d.h), wallPanelM);
+  m.rotation.y = d.ry; m.position.set(d.p[0], d.p[1], d.p[2]);
+  scene.add(m);
+});
+
+// Wainscoting removed for performance
+
+// ── ARCHITECTURAL COLUMNS ─────────────────────────────────────────────
+var columnM = new THREE.MeshStandardMaterial({color:0x1E1A14, roughness:0.4, metalness:0.3});
+var columnCapM = new THREE.MeshStandardMaterial({color:0xC8A96E, roughness:0.1, metalness:0.9});
+var columnPositions = [
+  [-6, 0, -5], [6, 0, -5],
+  [-6, 0, 5],  [6, 0, 5],
+];
+columnPositions.forEach(function(p) {
+  // Column shaft
+  var col = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.2, 4.6, 10), columnM);
+  col.position.set(p[0], 2.3, p[2]);
+  scene.add(col);
+  // Capital (top)
+  var cap = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 0.5), columnCapM);
+  cap.position.set(p[0], 4.7, p[2]);
+  scene.add(cap);
+  // Base
+  var base = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.15, 0.45), columnCapM);
+  base.position.set(p[0], 0.07, p[2]);
+  scene.add(base);
+// column light removed
+});
+
+// Marble floor tile grid — single merged plane with dark color
+var tileLineM = new THREE.MeshStandardMaterial({color:0x1A1614, roughness:0.05, metalness:0.4});
+
+// Archways simplified — just beams
+var archM2 = new THREE.MeshStandardMaterial({color:0x1A1614, roughness:0.6, metalness:0.1});
+[-8, 8].forEach(function(z) {
+  var beam = new THREE.Mesh(new THREE.BoxGeometry(14.4, 0.25, 0.35), archM2);
+  beam.position.set(0, 4.15, z); scene.add(beam);
+  var beamTrim = new THREE.Mesh(new THREE.BoxGeometry(14.4, 0.05, 0.05), moldingM);
+  beamTrim.position.set(0, 4.25, z); scene.add(beamTrim);
+});
+
+// ── FLOOR INLAY — decorative diamond pattern at center ────────────────
+var inlayM = new THREE.MeshStandardMaterial({color:0xC8A96E, roughness:0.1, metalness:0.6, transparent:true, opacity:0.4});
+var inlay = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), inlayM);
+inlay.rotation.x = -Math.PI/2; inlay.rotation.z = Math.PI/4;
+inlay.position.set(0, 0.004, 0); scene.add(inlay);
+var inlayRing = new THREE.Mesh(new THREE.RingGeometry(1.8, 2.0, 32), inlayM);
+inlayRing.rotation.x = -Math.PI/2; inlayRing.position.set(0, 0.005, 0);
+scene.add(inlayRing);
+
+// ── WALL SCONCES along corridors ──────────────────────────────────────
+var sconceM2 = new THREE.MeshStandardMaterial({color:0xC8A96E, roughness:0.1, metalness:0.9, emissive:0xC8A96E, emissiveIntensity:0.4});
+[-8,0,8].forEach(function(z) {
+  [-13.5, 13.5].forEach(function(x) {
+    var sconce2 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 6, 5), sconceM2);
+    sconce2.position.set(x, 2.8, z); scene.add(sconce2);
+// sconce light removed
+    // Sconce bracket
+    var bracket = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.04, 0.12), moldingM);
+    bracket.position.set(x > 0 ? x - 0.1 : x + 0.1, 2.8, z);
+    scene.add(bracket);
+  });
 });
 
 // Gold baseboard
@@ -861,28 +953,13 @@ scene.children.forEach(function(c) {
 });
 
 // Central mall corridor lighting — warm golden spots
-var corridorLights = [
-  [0, 4, 0], [-5, 4, -3], [5, 4, 3]
-];
-corridorLights.forEach(function(pos) {
-  var pl = new THREE.PointLight(0xFFD4A0, 1.5, 10);
-  pl.position.set(pos[0], pos[1], pos[2]);
-  scene.add(pl);
-});
+// Single ambient + directional instead of point lights
+var mainLight = new THREE.DirectionalLight(0xFFE8D0, 1.2);
+mainLight.position.set(0, 8, 0);
+scene.add(mainLight);
 
 // Accent lights — colored glows near stores
-var accentLights = [
-  {pos:[0,-0.5,-7.5], color:0xC8A96E, intensity:0.8},   // ICONY gold
-  {pos:[-9.5,-0.5,0], color:0xF0EDE8, intensity:0.6},   // ZARA white
-  {pos:[9.5,-0.5,0],  color:0xC4956A, intensity:0.6},   // MANGO terracotta
-  {pos:[0,-0.5,7.5],  color:0xE8B4C0, intensity:0.7},   // REVOLVE pink
-  {pos:[-7.5,-0.5,-5.5], color:0xFF3333, intensity:0.5} // H&M red
-];
-accentLights.forEach(function(l) {
-  var pl = new THREE.PointLight(l.color, l.intensity, 6);
-  pl.position.set(l.pos[0], l.pos[1], l.pos[2]);
-  scene.add(pl);
-});
+// accent lights removed for performance
 
 // ── DECORATIVE ELEMENTS ────────────────────────────────────────────────
 
@@ -940,10 +1017,7 @@ plantPositions.forEach(function(p) {
     leaf.position.set(p[0]+f[0], f[1], p[2]+f[1]*0.1);
     scene.add(leaf);
   });
-  // Warm light on plant
-  var plantLight = new THREE.PointLight(0xFFE0A0, 0.4, 3);
-  plantLight.position.set(p[0], 2.2, p[2]);
-  scene.add(plantLight);
+// plant light removed
 });
 
 // ── HANGING LIGHTS / CHANDELIERS in corridor ───────────────────────────
@@ -963,10 +1037,7 @@ hangingLightPositions.forEach(function(p) {
   );
   housing.position.set(p[0], p[1]-0.85, p[2]);
   scene.add(housing);
-  // Light
-  var hLight = new THREE.PointLight(0xFFE0A0, 0.6, 5);
-  hLight.position.set(p[0], p[1]-0.85, p[2]);
-  scene.add(hLight);
+// pendant light removed
 });
 
 // ── BENCHES / SEATING ─────────────────────────────────────────────────
@@ -994,7 +1065,7 @@ var npcs = [];
 var npcColors = [0xE8D4C0, 0xC4A882, 0x8B7355, 0xD4C0A8, 0xA08060];
 var npcOutfits = [0xE8B4B8, 0xC9B8D4, 0x2A2825, 0xC8A96E, 0x6B8CAE, 0xD4B896];
 
-for (var n = 0; n < 3; n++) {
+for (var n = 0; n < 2; n++) {
   var npcGroup = new THREE.Group();
   var skinCol = npcColors[n % npcColors.length];
   var outfitCol = npcOutfits[n % npcOutfits.length];
@@ -1055,7 +1126,7 @@ for (var n = 0; n < 3; n++) {
 }
 
 // ── FLOATING PARTICLES (dust/sparkle) ─────────────────────────────────
-var particleCount = 30;
+var particleCount = 20;
 var particleGeo = new THREE.BufferGeometry();
 var particlePositions = new Float32Array(particleCount * 3);
 var particleVelocities = [];
@@ -1199,8 +1270,7 @@ function buildStoreFacade(storeId) {
       cr.position.set(p[0],p[1],p[2]); chanGroup.add(cr);
     });
     chanGroup.position.set(0,3.9,-1.5); g.add(chanGroup);
-    var chLight=new THREE.PointLight(0xFFF5E0,2.0,7);
-    chLight.position.set(0,3.4,-1.5); g.add(chLight);
+// icony chandelier light removed
 
     // Velvet sofa
     var sofaM=new THREE.MeshStandardMaterial({color:0x4A3D35,roughness:0.95});
@@ -1271,9 +1341,7 @@ function buildStoreFacade(storeId) {
       var spot=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.06,0.1,8),
         new THREE.MeshStandardMaterial({color:0x111111,roughness:0.2,metalness:0.9}));
       spot.position.set(x,3.72,-1.2); g.add(spot);
-      var sl2=new THREE.PointLight(0xFFFFFF,0.8,4);
-      sl2.position.set(x,3.7,-1.2);
-      scene.add(sl2);
+// zara track light removed
     });
 
     // Minimalist bench — white with black legs
@@ -1311,8 +1379,7 @@ function buildStoreFacade(storeId) {
     var archTop=new THREE.Mesh(new THREE.TorusGeometry(1.05,0.12,6,12,Math.PI),archM);
     archTop.position.set(0,2.52,-2.72); archTop.rotation.z=Math.PI; g.add(archTop);
     // Inside arch — warm light
-    var archLight=new THREE.PointLight(0xFFCC88,1.5,3);
-    archLight.position.set(0,1.5,-2.5); g.add(archLight);
+// mango arch light removed
 
     // Rattan display shelves
     var rattanM=new THREE.MeshStandardMaterial({color:0x8B6914,roughness:0.95});
@@ -1346,8 +1413,7 @@ function buildStoreFacade(storeId) {
       var sconce=new THREE.Mesh(new THREE.SphereGeometry(0.1,8,6),
         new THREE.MeshStandardMaterial({color:0xC9A84C,roughness:0.1,metalness:0.8,emissive:0xC9A84C,emissiveIntensity:0.6}));
       sconce.position.set(x,2.4,-1.0); g.add(sconce);
-      var sLight=new THREE.PointLight(0xFFCC66,0.8,3);
-      sLight.position.set(x,2.4,-1.0); g.add(sLight);
+// mango sconce light removed
     });
 
   } else if (storeId === 'revolve') {
@@ -1375,8 +1441,7 @@ function buildStoreFacade(storeId) {
     neonBar2.position.set(-1.55,2.85,-2.68); g.add(neonBar2);
     var neonBar3=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.5,0.04),neonM);
     neonBar3.position.set(1.55,2.85,-2.68); g.add(neonBar3);
-    var neonLight=new THREE.PointLight(0xFF69B4,2.5,5);
-    neonLight.position.set(0,3.0,-2.4); g.add(neonLight);
+// revolve neon light removed
 
     // Black velvet display pedestals
     var pedestalM=new THREE.MeshStandardMaterial({color:0x0A0808,roughness:0.95});
@@ -1386,9 +1451,7 @@ function buildStoreFacade(storeId) {
       var pedTop=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.2,0.05,12),pedestalM);
       pedTop.position.set(x,0.93,-2.0); g.add(pedTop);
       // Spotlight on pedestal
-      var pedLight=new THREE.PointLight(0xFFD4FF,1.0,3);
-      pedLight.position.set(x,2.0,-1.8);
-      scene.add(pedLight);
+// revolve pedestal light removed
       // Item on pedestal
       var colors=[0xE8B4C0,0xC9B8D4,0xF5E6D0];
       var dispItem=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.08,0.08),
@@ -1398,8 +1461,7 @@ function buildStoreFacade(storeId) {
 
     // Dramatic side lighting — purple/pink
     [-2.8,2.8].forEach(function(x){
-      var sideLight=new THREE.PointLight(0x8B1A8B,0.8,4);
-      sideLight.position.set(x,2.0,-1.5); g.add(sideLight);
+// revolve side light removed
     });
 
     // Gold floor strip lights
@@ -1470,13 +1532,11 @@ function buildStoreFacade(storeId) {
       var lightBar=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.04,1.2),
         new THREE.MeshStandardMaterial({color:0xFFFFFF,emissive:0xFFFFFF,emissiveIntensity:1.0,roughness:0.1}));
       lightBar.position.set(x,3.85,-1.4); g.add(lightBar);
-      var brightLight=new THREE.PointLight(0xFFFFFF,0.8,4);
-      brightLight.position.set(x,3.7,-1.4); g.add(brightLight);
+// hm bright light removed
     });
 
     // Red accent light from sign
-    var redLight=new THREE.PointLight(0xFF2222,0.5,3);
-    redLight.position.set(0,3.4,-2.3); g.add(redLight);
+// hm red light removed
   }
 
   // Position group
@@ -1668,10 +1728,7 @@ function animate(timestamp){
     window._particleGeo.attributes.position.needsUpdate = true;
   }
 
-  // ── FOUNTAIN LIGHT PULSE ──────────────────────────────────────────
-  if (window._fountainLight) {
-    window._fountainLight.intensity = 1.2 + Math.sin(Date.now()*0.002) * 0.3;
-  }
+
 
   renderer.render(scene,camera);
 }
