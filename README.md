@@ -37,7 +37,7 @@ FashionWorld is the Nubank of fashion commerce — built for LATAM first, raisin
 - [ ] LATAM launch
 
 ## Contact
-Built by Leticia Tijerin — [@aprendeconmigotec](https://tiktok.com/@aprendeconmigotec)
+Built by Leticia Tijerina — [letytijerina91@gmailcom]
 
 ---
 *FashionWorld — Where fashion lives.*
