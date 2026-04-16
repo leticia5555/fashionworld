@@ -762,9 +762,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(W,H);
 renderer.shadowMap.enabled=false;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputEncoding=THREE.sRGBEncoding;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=0.95;
+renderer.toneMapping=THREE.NoToneMapping;
 
 var scene=new THREE.Scene();
 scene.background=new THREE.Color(0x3A3530);
