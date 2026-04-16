@@ -711,7 +711,7 @@ var STORES = {
   hm: {
     name: 'H&M', tagline: 'Conscious Fashion',
     wallColor: 0xCC0000, floorColor: 0xF8F8F8, accentColor: '#CC0000',
-    signColor: 0x880000, signGlow: 0xFF2222,
+    signColor: 0xCC0000, signGlow: 0xFF2222,
     dressColors: [0xCC0000,0xF8F8F8,0x4A4A4A,0xE8B4C0,0x6B8CAE,0xC4956A,0xF5E6D0,0x2A2825],
     catalog: [
       {id:1,name:'Oversized Hoodie',desc:'Brushed inside, kangaroo pocket',price:35,color:'#C4956A',cat:'top'},
@@ -1047,8 +1047,8 @@ benchPositions.forEach(function(p) {
 
 // ── NPCs — other shoppers walking around ─────────────────────────────
 var npcs = [];
-var npcColors = [0xE8D4C0, 0xC4A882, 0x8B7355, 0xD4C0A8, 0xA08060];
-var npcOutfits = [0xC8909A, 0x9A8AAA, 0x3A3530, 0xB89850, 0x5A7A9E, 0xC4A882];
+var npcColors = [0xC4956A, 0xA07840, 0x7A5C35, 0xB88A60, 0x8A6840];
+var npcOutfits = [0x8A6070, 0x706090, 0x2A2520, 0x907030, 0x405870, 0x907060];
 
 for (var n = 0; n < 2; n++) {
   var npcGroup = new THREE.Group();
@@ -1173,7 +1173,7 @@ function buildStoreFacade(storeId) {
                    storeId==='zara'    ? 0xE8E5E0 :
                    storeId==='mango'   ? 0x6B3E26 :
                    storeId==='revolve' ? 0x120810 :
-                   0x1A1A1A;
+                   0xF0EEEB;
   var frontM = new THREE.MeshStandardMaterial({
     color: frontColor, roughness: 0.7,
     emissive: new THREE.Color(frontColor), emissiveIntensity: 0.2
@@ -1499,10 +1499,10 @@ function buildStoreFacade(storeId) {
     backPanel.position.set(0,2.0,-2.72); g.add(backPanel);
 
     // Red horizontal stripe
-    var redM=new THREE.MeshStandardMaterial({color:0x660000,roughness:0.9,emissive:0x220000,emissiveIntensity:0.05});
-    var redStripe=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.12,0.04),redM);
+    var redM=new THREE.MeshStandardMaterial({color:0xCC0000,roughness:0.8,emissive:0x880000,emissiveIntensity:0.15});
+    var redStripe=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.06,0.04),redM);
     redStripe.position.set(0,3.2,-2.70); g.add(redStripe);
-    var redStripe2=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.12,0.04),redM);
+    var redStripe2=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.06,0.04),redM);
     redStripe2.position.set(0,0.15,-2.70); g.add(redStripe2);
 
     // Grid display system — white metal panels with clothes
