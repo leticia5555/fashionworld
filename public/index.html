@@ -767,17 +767,17 @@ renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=0.95;
 
 var scene=new THREE.Scene();
-scene.background=new THREE.Color(0x1a1917);
-scene.fog=new THREE.FogExp2(0x2E2A26,0.004);
+scene.background=new THREE.Color(0x3A3530);
+scene.fog=new THREE.FogExp2(0x3A3530,0.003);
 
 var camera=new THREE.PerspectiveCamera(70,W/H,0.05,80);
-camera.position.set(0,1.65,8);
+camera.position.set(0,1.7,5);
 
 // ── LIGHTS ─────────────────────────────────────────────────────────────
-scene.add(new THREE.AmbientLight(0xFFF8F0, 3.0));
+scene.add(new THREE.AmbientLight(0xFFFFFF, 4.5));
 
 // Main warm overhead
-var sun=new THREE.DirectionalLight(0xFFF5E0,0.8);
+var sun=new THREE.DirectionalLight(0xFFFFFF,2.0);
 sun.position.set(2,8,4);
 sun.castShadow=false;
 sun.shadow.mapSize.set(1024,1024);
@@ -787,9 +787,18 @@ sun.shadow.camera.far=40; sun.shadow.bias=-0.001;
 scene.add(sun);
 
 // Warm fill
-var fill=new THREE.DirectionalLight(0xFFE8D0,0.3);
-fill.position.set(-5,4,-3);
+var fill=new THREE.DirectionalLight(0xFFFFFF,1.5);
+fill.position.set(0,5,10);
 scene.add(fill);
+var fill2=new THREE.DirectionalLight(0xFFEEDD,1.2);
+fill2.position.set(0,5,-10);
+scene.add(fill2);
+var fill3=new THREE.DirectionalLight(0xFFFFFF,1.0);
+fill3.position.set(10,5,0);
+scene.add(fill3);
+var fill4=new THREE.DirectionalLight(0xFFFFFF,1.0);
+fill4.position.set(-10,5,0);
+scene.add(fill4);
 
 // ── MATERIALS ──────────────────────────────────────────────────────────
 // ICONY palette: blush bg, charcoal walls, gold accents
@@ -937,39 +946,7 @@ var base2=base1.clone(); base2.position.set(0,0.03,11.98); scene.add(base2);
 // ── MALL ATMOSPHERE ───────────────────────────────────────────────────
 
 // Better background — deep warm dark
-scene.background = new THREE.Color(0x2E2A26);
-scene.fog = new THREE.FogExp2(0x0E0C0A, 0.022);
-
-// Upgrade floor — dark marble with reflection
-var floorM2 = new THREE.MeshStandardMaterial({
-  color: 0x1A1714, roughness: 0.08, metalness: 0.4,
-  envMapIntensity: 0.5
-});
-// Remove old floor and replace
-scene.children.forEach(function(c) {
-  if (c.isMesh && c.geometry && c.geometry.type === 'PlaneGeometry' && Math.abs(c.rotation.x + Math.PI/2) < 0.1) {
-    c.material = floorM2;
-  }
-});
-
-// Central mall corridor lighting — warm golden spots
-// Single ambient + directional instead of point lights
-var mainLight = new THREE.DirectionalLight(0xFFE8D0, 2.0);
-mainLight.position.set(2, 6, 4);
-scene.add(mainLight);
-
-// Front fill light — illuminates store facades facing camera
-var frontLight = new THREE.DirectionalLight(0xFFF5E0, 1.5);
-frontLight.position.set(0, 3, 10);
-scene.add(frontLight);
-
-// Back light for REVOLVE
-var backLight = new THREE.DirectionalLight(0xFFD4D0, 1.0);
-backLight.position.set(0, 3, -10);
-scene.add(backLight);
-
-// Accent lights — colored glows near stores
-// accent lights removed for performance
+// scene setup unified above
 
 // ── DECORATIVE ELEMENTS ────────────────────────────────────────────────
 
@@ -1179,13 +1156,7 @@ function buildStoreFacade(storeId) {
   var pos = STORE_POSITIONS[storeId];
   var g = new THREE.Group();
 
-  // Make facade more visible against dark background
-  var facadeColor = storeId === 'icony' ? 0x3A3530 :
-                    storeId === 'zara' ? 0xF0EDE8 :
-                    storeId === 'mango' ? 0x5A3F28 :
-                    storeId === 'revolve' ? 0x1A0A10 :
-                    0xEEEEEE;
-  var wallM = new THREE.MeshStandardMaterial({color:facadeColor, roughness:0.8, emissive:new THREE.Color(facadeColor), emissiveIntensity:0.15});
+  var wallM = new THREE.MeshStandardMaterial({color:store.wallColor, roughness:0.8});
   var goldM2 = new THREE.MeshStandardMaterial({color:0xC8A96E,roughness:0.1,metalness:0.9});
 
   // ── SHARED FACADE ELEMENTS ────────────────────────────────────────
@@ -1564,6 +1535,32 @@ function buildStoreFacade(storeId) {
 
 // Build all store facades
 Object.keys(STORES).forEach(function(id){ buildStoreFacade(id); });
+
+// ── FLOATING STORE NAME SIGNS above each store ────────────────────────
+// These are bright emissive planes so you can see stores from anywhere
+Object.keys(STORE_POSITIONS).forEach(function(id) {
+  var store = STORES[id];
+  var pos = STORE_POSITIONS[id];
+  
+  // Bright glowing sign board above store
+  var signBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(4.5, 0.6, 0.1),
+    new THREE.MeshStandardMaterial({
+      color: 0xEDE8E3,
+      emissive: 0xEDE8E3,
+      emissiveIntensity: 0.8,
+      roughness: 0.5
+    })
+  );
+  signBoard.position.set(pos.x, 5.5, pos.z);
+  signBoard.rotation.y = pos.ry;
+  scene.add(signBoard);
+
+  // Strong point light at each store entrance
+  var storeLight = new THREE.PointLight(0xFFEEDD, 2.0, 8);
+  storeLight.position.set(pos.x, 3.5, pos.z);
+  scene.add(storeLight);
+});
 
 // Chandelier rotation tracker
 var chandelierMeshes=storeGroups.icony;
