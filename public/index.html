@@ -1173,7 +1173,7 @@ function buildStoreFacade(storeId) {
                    storeId==='zara'    ? 0xE8E5E0 :
                    storeId==='mango'   ? 0x6B3E26 :
                    storeId==='revolve' ? 0x120810 :
-                   0xF0EEEB;
+                   0x1C1C1C;
   var frontM = new THREE.MeshStandardMaterial({
     color: frontColor, roughness: 0.7,
     emissive: new THREE.Color(frontColor), emissiveIntensity: 0.2
@@ -1498,12 +1498,7 @@ function buildStoreFacade(storeId) {
     var backPanel=new THREE.Mesh(new THREE.PlaneGeometry(5.8,3.8),whiteM);
     backPanel.position.set(0,2.0,-2.72); g.add(backPanel);
 
-    // Red horizontal stripe
-    var redM=new THREE.MeshStandardMaterial({color:0xCC0000,roughness:0.8,emissive:0x880000,emissiveIntensity:0.15});
-    var redStripe=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.06,0.04),redM);
-    redStripe.position.set(0,3.2,-2.70); g.add(redStripe);
-    var redStripe2=new THREE.Mesh(new THREE.BoxGeometry(5.8,0.06,0.04),redM);
-    redStripe2.position.set(0,0.15,-2.70); g.add(redStripe2);
+    // H&M — no red stripes, clean white wall only
 
     // Grid display system — white metal panels with clothes
     [-2.0,2.0].forEach(function(x){
@@ -1562,6 +1557,55 @@ function buildStoreFacade(storeId) {
 
 // Build all store facades
 Object.keys(STORES).forEach(function(id){ buildStoreFacade(id); });
+
+// ── STORE NAME SIGNS above each entrance ─────────────────────────────
+Object.keys(STORE_POSITIONS).forEach(function(id) {
+  var store = STORES[id];
+  var pos = STORE_POSITIONS[id];
+
+  // Create canvas texture with store name
+  var canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 128;
+  var ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#EDE8E3';
+  ctx.fillRect(0, 0, 512, 128);
+
+  // Store name text
+  ctx.fillStyle = '#2A2825';
+  ctx.font = '500 52px "DM Sans", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.letterSpacing = '8px';
+  ctx.fillText(store.name, 256, 64);
+
+  // Gold underline
+  ctx.fillStyle = '#C8A96E';
+  ctx.fillRect(180, 90, 152, 2);
+
+  var texture = new THREE.CanvasTexture(canvas);
+  var signMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.5, 0.7),
+    new THREE.MeshStandardMaterial({
+      map: texture,
+      emissiveMap: texture,
+      emissive: new THREE.Color(0xFFFFFF),
+      emissiveIntensity: 0.6,
+      roughness: 0.5
+    })
+  );
+
+  // Position above store entrance, facing outward
+  var offsetDist = 0.3;
+  signMesh.position.set(
+    pos.x + Math.sin(pos.ry) * offsetDist,
+    4.3,
+    pos.z + Math.cos(pos.ry) * offsetDist
+  );
+  signMesh.rotation.y = pos.ry;
+  scene.add(signMesh);
+});
 
 // ── FLOATING STORE NAME SIGNS above each store ────────────────────────
 // These are bright emissive planes so you can see stores from anywhere
