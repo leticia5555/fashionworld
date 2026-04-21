@@ -8,7 +8,7 @@ Walk through a real 3D mall. Enter branded stores. Try clothes on an AI-powered 
 Open `public/index.html` in Chrome.
 
 ## Features
-- 🏬 **5 branded stores** — ICONY, ZARA, MANGO, REVOLVE, H&M
+- 🏬 5 branded stores — ICONY + 4 partner brands (prototype placeholders)
 - 🚶 **3D immersive mall** — WASD navigation, mouse look, proximity detection
 - 👗 **Body scan onboarding** — 3 methods: photo scan, manual measurements, quick setup
 - 🪞 **AI fitting room** — Claude Vision analyzes your photo and shows how garments look on YOU
