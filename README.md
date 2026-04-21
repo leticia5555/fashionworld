@@ -33,7 +33,6 @@ FashionWorld is the Nubank of fashion commerce — built for LATAM first, raisin
 - [ ] Awin product feed integration (real products)
 - [ ] Real-time social session sharing
 - [ ] Body scan from photo (IDM-VTON)
-- [ ] YC W26 application
 - [ ] LATAM launch
 
 ## Contact
