@@ -1600,39 +1600,24 @@ Object.keys(STORE_POSITIONS).forEach(function(id) {
     })
   );
 
-  // Position above store entrance, facing outward
-  var offsetDist = 0.5;
+  // Position above store entrance, facing outward toward mall center
+  // pos.ry is the store's rotation - facade faces the mall center
+  // Sign should also face mall center
+  var outwardAngle = pos.ry;
+  // Offset the sign away from the wall, toward the mall center
   signMesh.position.set(
-    pos.x + Math.sin(pos.ry) * offsetDist,
-    3.9,
-    pos.z + Math.cos(pos.ry) * offsetDist
+    pos.x - Math.sin(outwardAngle) * 0.3,
+    4.2,
+    pos.z - Math.cos(outwardAngle) * 0.3
   );
-  signMesh.rotation.y = pos.ry + Math.PI;
+  signMesh.rotation.y = outwardAngle;
   scene.add(signMesh);
 });
 
-// ── FLOATING STORE NAME SIGNS above each store ────────────────────────
-// These are bright emissive planes so you can see stores from anywhere
+// Point lights at store entrances for visibility
 Object.keys(STORE_POSITIONS).forEach(function(id) {
-  var store = STORES[id];
   var pos = STORE_POSITIONS[id];
-  
-  // Bright glowing sign board above store
-  var signBoard = new THREE.Mesh(
-    new THREE.BoxGeometry(4.5, 0.6, 0.1),
-    new THREE.MeshStandardMaterial({
-      color: 0xEDE8E3,
-      emissive: 0xEDE8E3,
-      emissiveIntensity: 0.8,
-      roughness: 0.5
-    })
-  );
-  signBoard.position.set(pos.x, 5.5, pos.z);
-  signBoard.rotation.y = pos.ry;
-  scene.add(signBoard);
-
-  // Strong point light at each store entrance
-  var storeLight = new THREE.PointLight(0xFFEEDD, 2.0, 8);
+  var storeLight = new THREE.PointLight(0xFFEEDD, 1.5, 6);
   storeLight.position.set(pos.x, 3.5, pos.z);
   scene.add(storeLight);
 });
