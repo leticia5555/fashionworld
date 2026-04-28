@@ -1557,61 +1557,58 @@ function buildStoreFacade(storeId) {
 // Build all store facades
 Object.keys(STORE_POSITIONS).forEach(function(id){ buildStoreFacade(id); });
 
-// ── STORE NAME SIGNS above each entrance ─────────────────────────────
+// ── STORE NAME SIGNS — SPRITES that always face camera ────────────
 Object.keys(STORE_POSITIONS).forEach(function(id) {
   var store = STORES[id];
   var pos = STORE_POSITIONS[id];
 
-  // Create canvas texture with store name — HIGH CONTRAST
+  // Create high-res canvas with store name
   var canvas = document.createElement('canvas');
   canvas.width = 1024; canvas.height = 256;
   var ctx = canvas.getContext('2d');
 
-  // Dark background
-  ctx.fillStyle = '#1A1714';
+  // Dark luxury background with rounded look
+  ctx.fillStyle = 'rgba(20, 18, 16, 0.95)';
   ctx.fillRect(0, 0, 1024, 256);
 
-  // Gold border
+  // Double gold border
   ctx.strokeStyle = '#C8A96E';
-  ctx.lineWidth = 4;
-  ctx.strokeRect(12, 12, 1000, 232);
+  ctx.lineWidth = 6;
+  ctx.strokeRect(20, 20, 984, 216);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(35, 35, 954, 186);
 
-  // Store name text — BIG BRIGHT WHITE
-  ctx.fillStyle = '#EDE8E3';
-  ctx.font = 'bold 110px "DM Sans", sans-serif';
+  // Store name — bold, bright, centered
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 130px "DM Sans", "Helvetica", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(store.name, 512, 128);
 
-  // Small tagline below
+  // Spread letters
+  var name = store.name;
+  var letterSpacing = 12;
+  ctx.fillText(name, 512, 128);
+
+  // Gold accent line under name
   ctx.fillStyle = '#C8A96E';
-  ctx.font = '28px "DM Sans", sans-serif';
-  ctx.fillText('◆  FASHIONWORLD  ◆', 512, 210);
+  ctx.fillRect(450, 200, 124, 3);
 
   var texture = new THREE.CanvasTexture(canvas);
   texture.minFilter = THREE.LinearFilter;
   texture.magFilter = THREE.LinearFilter;
+  texture.needsUpdate = true;
 
-  var signMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(4.5, 1.1),
-    new THREE.MeshBasicMaterial({
-      map: texture,
-      transparent: false
-    })
-  );
-
-  // Position above store entrance, facing outward toward mall center
-  // pos.ry is the store's rotation - facade faces the mall center
-  // Sign should also face mall center
-  var outwardAngle = pos.ry;
-  // Offset the sign away from the wall, toward the mall center
-  signMesh.position.set(
-    pos.x - Math.sin(outwardAngle) * 0.3,
-    4.2,
-    pos.z - Math.cos(outwardAngle) * 0.3
-  );
-  signMesh.rotation.y = outwardAngle;
-  scene.add(signMesh);
+  // Use SPRITE — always faces camera automatically
+  var spriteMaterial = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthTest: true,
+    depthWrite: false
+  });
+  var sprite = new THREE.Sprite(spriteMaterial);
+  sprite.scale.set(5, 1.25, 1);
+  sprite.position.set(pos.x, 4.5, pos.z);
+  scene.add(sprite);
 });
 
 // Point lights at store entrances for visibility
