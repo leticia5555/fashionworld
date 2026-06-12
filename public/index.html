@@ -463,7 +463,7 @@ body.is-mobile #mobile-controls{display:block}
     <div id="bs-scan-status">Analyzing your photos...</div>
   </div>
   <button class="bs-btn" id="bs-scan-btn" onclick="startScan()" disabled>Scan my body</button>
-  <div class="bs-note">Photos are processed locally — never stored or shared</div>
+  <div class="bs-note">Scan runs on your device. Try-on photos are sent securely to generate your look — never stored</div>
 </div>
 
 <!-- FLOW: Manual measurements -->
@@ -8155,45 +8155,86 @@ async function generateAITryOn(item) {
   }, 800);
 
   try {
-    // Use Claude API to analyze the photo and generate try-on
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: userPhotoData.split(',')[1]
-              }
-            },
-            {
-              type: 'text',
-              text: 'You are a fashion AI. I am showing you a photo of a person. They want to virtually try on: "' + (item.n || item.name) + '" — ' + item.desc + ' in color ' + item.color + '. Describe in 2-3 sentences how this garment would look on THIS specific person in the photo, considering their body shape, skin tone, and proportions. Be specific, warm, and encouraging. Then suggest one complementary piece. Keep it under 100 words total.'
-            }
-          ]
-        }]
-      })
-    });
-
+    // FASHN photorealistic try-on when we have a garment image
+    var garmentImg = item.img || window._uploadedGarment || null;
+    if (garmentImg && userPhotoData) {
+      procText.textContent = 'Generating your photorealistic try-on...';
+      var fashnResult = await runFashnTryOn(userPhotoData, garmentImg);
+      if (fashnResult) {
+        clearInterval(stepInterval);
+        var styleText = await fetchStylistText(item);
+        renderFashnResult(item, fashnResult, styleText);
+        return;
+      }
+      // FASHN failed → fall through to canvas + stylist text
+    }
+    var aiText = await fetchStylistText(item);
     clearInterval(stepInterval);
-    var data = await response.json();
-    var aiText = data.content && data.content[0] ? data.content[0].text : 'This piece looks amazing on you!';
-
-    // Now render the try-on canvas
-    renderAITryOnCanvas(item, aiText);
-
+    renderAITryOnCanvas(item, aiText || 'This piece was made for your proportions.');
   } catch(err) {
     clearInterval(stepInterval);
     // Fallback — render without AI text
     var colorName = item.name ? item.name.split(' ')[0] : 'This'; renderAITryOnCanvas(item, colorName + ' ' + (item.n || item.name) + ' would look stunning on you. The silhouette flatters your proportions beautifully. Try pairing it with nude heels and a delicate gold chain.');
   }
+}
+
+async function fetchStylistText(item) {
+  try {
+    var r = await fetch('/api/stylist', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        imageBase64: userPhotoData ? userPhotoData.split(',')[1] : null,
+        itemName: item.n || item.name, itemDesc: item.desc || '', itemColor: item.color || ''
+      })
+    });
+    var d = await r.json();
+    return d.text || null;
+  } catch(e) { return null; }
+}
+
+async function runFashnTryOn(modelPhoto, garmentImg) {
+  try {
+    var sub = await fetch('/api/tryon', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ modelImage: modelPhoto, garmentImage: garmentImg, category: 'auto' })
+    });
+    var sd = await sub.json();
+    if (!sub.ok || !sd.id) { console.warn('tryon submit:', sd.error); return null; }
+    // poll up to 60s
+    for (var i = 0; i < 30; i++) {
+      await new Promise(function(rs){ setTimeout(rs, 2000); });
+      var st = await fetch('/api/tryon-status?id=' + encodeURIComponent(sd.id));
+      var sj = await st.json();
+      if (sj.status === 'completed' && sj.output && sj.output[0]) return sj.output[0];
+      if (sj.status === 'failed') { console.warn('tryon failed:', sj.error); return null; }
+    }
+    return null;
+  } catch(e) { console.warn('tryon error', e); return null; }
+}
+
+function renderFashnResult(item, imgUrl, styleText) {
+  var processing = document.getElementById('ai-tryon-processing');
+  var canvas = document.getElementById('ai-tryon-canvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = 440; canvas.height = 560;
+  canvas.style.display = 'block'; canvas.style.width = '100%';
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    ctx.fillStyle = '#F5F0E8'; ctx.fillRect(0,0,440,560);
+    var s2 = Math.min(420/img.width, 460/img.height);
+    var w2 = img.width*s2, h2 = img.height*s2;
+    ctx.drawImage(img, (440-w2)/2, 12, w2, h2);
+    ctx.fillStyle = '#8A8278'; ctx.font = '11px DM Sans, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillText('FashionWorld × AI Try-On', 428, 548);
+    if (processing) processing.style.display = 'none';
+    var aiTextEl = document.getElementById('ai-tryon-text');
+    if (aiTextEl && styleText) aiTextEl.textContent = styleText;
+  };
+  img.onerror = function(){ renderAITryOnCanvas(item, styleText || ''); };
+  img.src = imgUrl;
 }
 
 function renderAITryOnCanvas(item, aiText) {
@@ -8548,7 +8589,32 @@ function lightenColor(hex, amt) {
   return 'rgb('+Math.min(255,c.r+amt)+','+Math.min(255,c.g+amt)+','+Math.min(255,c.b+amt)+')';
 }
 
+var _avatarPhotoImg = null;
 function drawAvatar() {
+  // If the user gave us a photo, the fitting room shows HER, not a doll
+  if (typeof userPhotoData !== 'undefined' && userPhotoData && avatarCtx) {
+    var W = avatarCanvas.width, H = avatarCanvas.height;
+    if (!_avatarPhotoImg || _avatarPhotoImg._src !== userPhotoData) {
+      _avatarPhotoImg = new Image();
+      _avatarPhotoImg._src = userPhotoData;
+      _avatarPhotoImg.onload = function(){ drawAvatar(); };
+      _avatarPhotoImg.src = userPhotoData;
+      return;
+    }
+    if (!_avatarPhotoImg.complete) return;
+    avatarCtx.clearRect(0,0,W,H);
+    avatarCtx.fillStyle = '#EFEAE2'; avatarCtx.fillRect(0,0,W,H);
+    var iw=_avatarPhotoImg.width, ih=_avatarPhotoImg.height;
+    var sc=Math.max(W/iw, H/ih), dw=iw*sc, dh=ih*sc;
+    avatarCtx.drawImage(_avatarPhotoImg,(W-dw)/2,(H-dh)/2,dw,dh);
+    // soft gold frame
+    avatarCtx.strokeStyle='rgba(200,169,110,0.55)'; avatarCtx.lineWidth=6;
+    avatarCtx.strokeRect(3,3,W-6,H-6);
+    return;
+  }
+  drawAvatarDoll();
+}
+function drawAvatarDoll() {
   if (!avatarCtx || !avatarCanvas) return;
   var dpr = window.devicePixelRatio || 1;
   var W = avatarCanvas.width / dpr;
