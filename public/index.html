@@ -5913,7 +5913,7 @@ var STORES = {
     dressColors: [0xE8A090,0xEDE8E3,0xC8A96E,0xC9B8D4,0xD4C0B8,0xB8C9B8,0xA0A8D4,0xE8B4B8],
     catalog: [
       {id:1,name:'Satin Slip Dress',desc:'Fluid satin, adjustable straps',price:1850,color:'#E8B4B8',cat:'dress'},
-      {id:2,name:'Lavender Midi',desc:'Draped silhouette, side slit',price:1650,color:'#C9B8D4',cat:'dress'},
+      {id:2,name:'Lavender Slip Dress',desc:'Satin midi, lace-trim bust \u00b7 ICONY signature',price:1850,color:'#C9B8D4',cat:'dress',img:'/garments/icony-slip-dress.png'},
       {id:3,name:'Sage Linen Set',desc:'Co-ord top + wide trousers',price:2200,color:'#B8C9B8',cat:'set'},
       {id:4,name:'Coral Sundress',desc:'Ruched bust, open back',price:1450,color:'#E8A090',cat:'dress'},
       {id:5,name:'Periwinkle Wrap',desc:'Wrap style, flutter sleeves',price:1550,color:'#A0A8D4',cat:'dress'},
@@ -9238,9 +9238,19 @@ function renderGrid(){
     var card=document.createElement('div');
     card.style.cssText='background:#fff;border-radius:10px;overflow:hidden;cursor:pointer;border:1px solid rgba(0,0,0,.08);box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s';
 
-    // Color swatch
+    // Color swatch (or real product photo)
     var swatch=document.createElement('div');
     swatch.style.cssText='width:100%;height:160px;background:'+item.color+';position:relative;overflow:hidden;flex-shrink:0';
+    if(item.img){
+      var ph=document.createElement('img');
+      ph.src=item.img; ph.loading='lazy';
+      ph.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+      swatch.appendChild(ph);
+      var tag=document.createElement('div');
+      tag.textContent='AI TRY-ON \u2728';
+      tag.style.cssText='position:absolute;top:8px;left:8px;background:rgba(200,169,110,.92);color:#1A1610;font-size:9px;font-weight:700;letter-spacing:.08em;padding:3px 7px;border-radius:20px;z-index:2';
+      swatch.appendChild(tag);
+    }
 
     // Product name label on swatch
     var label=document.createElement('div');
