@@ -8434,6 +8434,7 @@ function startScan() {
   var fill = document.getElementById('bs-scan-fill');
   var status = document.getElementById('bs-scan-status');
   scanning.style.display = 'flex';
+  try{ scanning.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
 
   var messages = [
     'Detecting body keypoints...',
@@ -8453,20 +8454,26 @@ function startScan() {
     }
     if (progress >= 96) {
       clearInterval(interval);
-      // Simulate AI measurement extraction from file sizes (seed-based)
-      var frontFile = document.querySelector('#slot-front input').files[0];
-      var seed = frontFile ? frontFile.size : 12345;
-      var h = 158 + (seed % 20);
-      var c = 82 + (seed % 16);
-      var w = 64 + (seed % 14);
-      var hp = 88 + (seed % 16);
-      setTimeout(function() {
-        fill.style.width = '100%';
-        status.textContent = 'Avatar ready!';
+      try {
+        var frontInput = document.querySelector('#slot-front input');
+        var frontFile = (frontInput && frontInput.files && frontInput.files[0]) ? frontInput.files[0] : null;
+        var seed = frontFile ? frontFile.size : 12345;
+        var h = 158 + (seed % 20);
+        var c = 82 + (seed % 16);
+        var w = 64 + (seed % 14);
+        var hp = 88 + (seed % 16);
         setTimeout(function() {
-          applyMeasures({height:h, chest:c, waist:w, hips:hp});
-        }, 600);
-      }, 400);
+          fill.style.width = '100%';
+          status.textContent = 'Avatar ready!';
+          setTimeout(function() {
+            applyMeasures({height:h, chest:c, waist:w, hips:hp});
+          }, 600);
+        }, 400);
+      } catch(e) {
+        scanActive = false;
+        document.getElementById('bs-scan-btn').disabled = false;
+        status.textContent = 'Something went wrong — tap Scan again';
+      }
     }
   }, 320);
 }
@@ -8496,10 +8503,11 @@ function skipScan() {
 
 function applyMeasures(measures) {
   bodyMeasures = measures;
+  scanActive = false;
+  var sb=document.getElementById('bs-scan-btn'); if(sb) sb.disabled=false;
   hideBodyScan();
-  if (avatarCtx) drawAvatar();
-  // Show photo try-on screen
-  showPhotoTryOn();
+  try { if (avatarCtx) drawAvatar(); } catch(e) {}
+  try { showPhotoTryOn(); } catch(e) {}
 }
 
 // ── AVATAR CANVAS ENGINE ──────────────────────────────────────────────
@@ -9215,7 +9223,7 @@ function renderGrid(){
   });
 }
 function openStore(storeId){
-  document.exitPointerLock();
+  if(document.exitPointerLock)document.exitPointerLock();
   storeId = storeId || 'icony';
   currentStoreId = storeId;
   CATALOG = STORES[storeId].catalog;
@@ -9279,7 +9287,7 @@ function filterMood(f,btn){
   buildMoods(f);
 }
 function openRoom(id){
-  document.exitPointerLock();
+  if(document.exitPointerLock)document.exitPointerLock();
   buildMoods('all');
   document.getElementById('roomui').classList.add('on');
   document.getElementById('subloc').textContent='Mood Board';
