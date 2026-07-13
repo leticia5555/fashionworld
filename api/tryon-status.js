@@ -2,11 +2,12 @@
 export default async function handler(req, res) {
   const id = req.query.id;
   if (!id) return res.status(400).json({ error: 'id required' });
-  if (!process.env.FASHN_API_KEY)
-    return res.status(500).json({ error: 'FASHN_API_KEY not configured in Vercel' });
+  const FASHN_KEY = (process.env.FASHN_API_KEY || '').trim();
+  if (!FASHN_KEY)
+    return res.status(500).json({ error: 'FASHN_API_KEY not configured in Vercel (missing or empty)' });
   try {
     const r = await fetch('https://api.fashn.ai/v1/status/' + encodeURIComponent(id), {
-      headers: { 'Authorization': 'Bearer ' + process.env.FASHN_API_KEY }
+      headers: { 'Authorization': 'Bearer ' + FASHN_KEY }
     });
     const data = await r.json().catch(() => ({}));
     // FASHN errors may be an object { name, message } — always hand the frontend a string.

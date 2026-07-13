@@ -6,8 +6,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   try {
     const { modelImage, garmentImage, category } = req.body || {};
-    if (!process.env.FASHN_API_KEY)
-      return res.status(500).json({ error: 'FASHN_API_KEY not configured in Vercel' });
+    const FASHN_KEY = (process.env.FASHN_API_KEY || '').trim();
+    if (!FASHN_KEY)
+      return res.status(500).json({ error: 'FASHN_API_KEY not configured in Vercel (missing or empty)' });
     if (!modelImage || !garmentImage)
       return res.status(400).json({ error: 'modelImage and garmentImage required (data URI or URL)' });
 
@@ -28,7 +29,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + process.env.FASHN_API_KEY
+        'Authorization': 'Bearer ' + FASHN_KEY
       },
       body: JSON.stringify(body)
     });
