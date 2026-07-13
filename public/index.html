@@ -343,6 +343,8 @@ body.is-mobile #mobile-controls{display:block}
     <div id="ai-tryon-info">
       <div id="ai-tryon-item-name"></div>
       <div id="ai-tryon-item-desc"></div>
+      <div id="ai-tryon-text" style="display:none;font-size:11px;color:#5a564f;line-height:1.6"></div>
+      <div id="ai-tryon-debug" style="display:none;font-size:9px;font-family:ui-monospace,Menlo,monospace;color:#b0543a;line-height:1.5;word-break:break-word;background:rgba(176,84,58,.07);border-radius:6px;padding:8px 10px"></div>
     </div>
     <div id="ai-tryon-actions">
       <button class="ai-act-btn ai-act-primary" onclick="addCurrentToLook()">Add to my look</button>
@@ -8081,6 +8083,7 @@ var _originalAddPiece = null;
 // ── AI TRY-ON ENGINE ──────────────────────────────────────────────────
 var currentAIItem = null;
 var _pendingTryOnItem = null;
+var _lastTryOnError = null; // real backend error shown in the overlay when we fall back to canvas
 
 // Last outfit piece that has a real garment photo (FASHN-capable)
 function selectedTryOnItem() {
@@ -8131,6 +8134,12 @@ function openAITryOn(item) {
   // Set item info
   itemName.textContent = item.n || item.name;
   itemDesc.textContent = item.desc + ' · $' + (item.p || item.price).toLocaleString();
+
+  // Reset debug / stylist text from a previous run
+  var dbg = document.getElementById('ai-tryon-debug');
+  if (dbg) { dbg.style.display = 'none'; dbg.textContent = ''; }
+  var aiTxt = document.getElementById('ai-tryon-text');
+  if (aiTxt) { aiTxt.style.display = 'none'; aiTxt.textContent = ''; }
 
   // Show overlay
   overlay.classList.add('on');
@@ -8231,6 +8240,7 @@ async function fetchStylistText(item) {
 }
 
 async function runFashnTryOn(modelPhoto, garmentImg) {
+  _lastTryOnError = null;
   try {
     var sub = await fetch('/api/tryon', {
       method: 'POST',
@@ -8238,17 +8248,31 @@ async function runFashnTryOn(modelPhoto, garmentImg) {
       body: JSON.stringify({ modelImage: modelPhoto, garmentImage: garmentImg, category: 'auto' })
     });
     var sd = await sub.json();
-    if (!sub.ok || !sd.id) { console.warn('tryon submit:', sd.error); return null; }
+    if (!sub.ok || !sd.id) {
+      _lastTryOnError = 'submit HTTP ' + sub.status + ': ' + (sd.error || 'no job id returned');
+      console.warn('tryon submit:', sd.error); return null;
+    }
     // poll up to 60s
     for (var i = 0; i < 30; i++) {
       await new Promise(function(rs){ setTimeout(rs, 2000); });
       var st = await fetch('/api/tryon-status?id=' + encodeURIComponent(sd.id));
       var sj = await st.json();
+      if (!st.ok) {
+        _lastTryOnError = 'status HTTP ' + st.status + ': ' + (sj.error || 'unknown');
+        console.warn('tryon status:', sj.error); return null;
+      }
       if (sj.status === 'completed' && sj.output && sj.output[0]) return sj.output[0];
-      if (sj.status === 'failed') { console.warn('tryon failed:', sj.error); return null; }
+      if (sj.status === 'failed') {
+        _lastTryOnError = 'FASHN failed: ' + (sj.error || 'unknown');
+        console.warn('tryon failed:', sj.error); return null;
+      }
     }
+    _lastTryOnError = 'timeout: FASHN did not finish within 60s';
     return null;
-  } catch(e) { console.warn('tryon error', e); return null; }
+  } catch(e) {
+    _lastTryOnError = 'network: ' + String(e && e.message || e);
+    console.warn('tryon error', e); return null;
+  }
 }
 
 function renderFashnResult(item, imgUrl, styleText) {
@@ -8268,9 +8292,14 @@ function renderFashnResult(item, imgUrl, styleText) {
     ctx.textAlign = 'right'; ctx.fillText('FashionWorld × AI Try-On', 428, 548);
     if (processing) processing.style.display = 'none';
     var aiTextEl = document.getElementById('ai-tryon-text');
-    if (aiTextEl && styleText) aiTextEl.textContent = styleText;
+    if (aiTextEl && styleText) { aiTextEl.textContent = styleText; aiTextEl.style.display = 'block'; }
+    var dbg = document.getElementById('ai-tryon-debug');
+    if (dbg) dbg.style.display = 'none';
   };
-  img.onerror = function(){ renderAITryOnCanvas(item, styleText || ''); };
+  img.onerror = function(){
+    _lastTryOnError = 'result image failed to load: ' + imgUrl;
+    renderAITryOnCanvas(item, styleText || '');
+  };
   img.src = imgUrl;
 }
 
@@ -8278,6 +8307,17 @@ function renderAITryOnCanvas(item, aiText) {
   var processing = document.getElementById('ai-tryon-processing');
   var canvas = document.getElementById('ai-tryon-canvas');
   var ctx = canvas.getContext('2d');
+
+  // Debug mode: surface the real backend error when FASHN fell back to canvas
+  var dbg = document.getElementById('ai-tryon-debug');
+  if (dbg) {
+    if (_lastTryOnError) {
+      dbg.textContent = '⚠ AI try-on fallback — ' + _lastTryOnError;
+      dbg.style.display = 'block';
+    } else {
+      dbg.style.display = 'none';
+    }
+  }
 
   // Set canvas size
   canvas.width = 440;
