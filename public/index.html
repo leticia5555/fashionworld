@@ -336,7 +336,8 @@ body.is-mobile #mobile-controls{display:block}
         <canvas id="ai-tryon-canvas" style="width:100%;max-height:420px;object-fit:contain;display:none"></canvas>
       </div>
       <div id="ai-no-photo-msg" style="display:none">
-        Upload your photo first to see AI try-on.<br>Go back to the entry screen and add your selfie.
+        Upload your photo to see AI try-on.<br><br>
+        <button class="fbt" style="background:#C8A96E;color:#1A1610;font-weight:700;max-width:260px" onclick="closeAITryOn();if(currentAIItem)tryOnWithPhoto(currentAIItem)">✨ Subir mi foto</button>
       </div>
     </div>
     <div id="ai-tryon-info">
@@ -358,8 +359,7 @@ body.is-mobile #mobile-controls{display:block}
     <div id="pt-title">Now — add your photo</div>
     <div id="pt-sub">Upload a photo of yourself and see how clothes look on YOUR body. This is the moment that changes everything.</div>
 
-```
-<div id="pt-upload-area" id="pt-upload-area">
+<div id="pt-upload-area">
   <div id="pt-upload-icon">🤳</div>
   <div id="pt-upload-label">Upload your photo</div>
   <input type="file" accept="image/*" id="pt-upload-input" onchange="handleUserPhoto(this)">
@@ -379,7 +379,6 @@ body.is-mobile #mobile-controls{display:block}
 <button class="pt-btn" id="pt-enter-btn" onclick="enterWithPhoto()" disabled>Enter the Mall with my avatar →</button>
 <button class="pt-btn pt-btn-ghost" onclick="skipPhotoTryOn()">Skip — use my measurements only</button>
 <div id="pt-note">Your photo stays on your device — never uploaded to any server</div>
-```
 
   </div>
 </div>
@@ -414,7 +413,6 @@ body.is-mobile #mobile-controls{display:block}
     <div id="bs-title">Let's build<br>your avatar</div>
     <div id="bs-sub">Your avatar stays with you across every store in the mall. Clothes will drape on your exact body — so what you see is what you'll actually look like.</div>
 
-```
 <!-- Method selector -->
 <div id="bs-methods">
   <div class="bs-method" onclick="selectScanMethod('photo')" id="bsm-photo">
@@ -520,7 +518,6 @@ body.is-mobile #mobile-controls{display:block}
   <button class="bs-btn" onclick="applyQuick()">Build my avatar</button>
   <button class="bs-btn bs-btn-secondary" onclick="skipScan()">Skip for now</button>
 </div>
-```
 
   </div>
 </div>
@@ -597,8 +594,10 @@ body.is-mobile #mobile-controls{display:block}
       <div id="fitpanel-bottom">
         <div id="fit-total">$0</div>
         <div id="fit-count">0 pieces selected</div>
+        <button class="fbt" id="fit-tryon-btn" style="display:none;background:#C8A96E;color:#1A1610;font-weight:700" onclick="tryOnSelected()">✨ Pruébatelo con tu foto</button>
         <button class="fbt fbt-dark" onclick="openShare()">Ask a friend &rarr;</button>
         <button class="fbt fbt-light" onclick="clearFit()">Clear outfit</button>
+        <input type="file" accept="image/*" id="store-photo-input" style="display:none" onchange="handleStorePhoto(this)">
       </div>
     </div>
   </div>
@@ -8081,6 +8080,44 @@ var _originalAddPiece = null;
 
 // ── AI TRY-ON ENGINE ──────────────────────────────────────────────────
 var currentAIItem = null;
+var _pendingTryOnItem = null;
+
+// Last outfit piece that has a real garment photo (FASHN-capable)
+function selectedTryOnItem() {
+  var keys = Object.keys(outfit);
+  for (var i = keys.length - 1; i >= 0; i--) {
+    if (outfit[keys[i]] && outfit[keys[i]].img) return outfit[keys[i]];
+  }
+  return null;
+}
+
+function tryOnSelected() {
+  var item = selectedTryOnItem();
+  if (item) tryOnWithPhoto(item);
+}
+
+// Entry point for badge / fitting-room button: opens the file picker first
+// if the user has no photo yet (must stay synchronous for iOS to allow it)
+function tryOnWithPhoto(it) {
+  var item = {id:it.id,n:it.n||it.name,name:it.name||it.n,desc:it.desc,p:it.p||it.price,price:it.price||it.p,color:it.color,cat:it.cat,img:it.img};
+  if (userPhotoData) { openAITryOn(item); return; }
+  _pendingTryOnItem = item;
+  document.getElementById('store-photo-input').click();
+}
+
+function handleStorePhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    userPhotoData = e.target.result;
+    input.value = '';
+    try { if (avatarCtx) drawAvatar(); } catch(err) {}
+    try { renderGrid(); } catch(err) {}
+    var item = _pendingTryOnItem; _pendingTryOnItem = null;
+    if (item) openAITryOn(item);
+  };
+  reader.readAsDataURL(input.files[0]);
+}
 
 function openAITryOn(item) {
   currentAIItem = item;
@@ -9218,6 +9255,8 @@ function renderFitPanel() {
   if (!count) items.innerHTML = '<div style="font-size:10px;color:#b0ada8;letter-spacing:.06em;padding:8px 0">Browse pieces to build your look</div>';
   document.getElementById('fit-total').textContent = '$' + total.toLocaleString();
   document.getElementById('fit-count').textContent = count + ' piece' + (count!==1?'s':'') + ' selected';
+  var tryBtn = document.getElementById('fit-tryon-btn');
+  if (tryBtn) tryBtn.style.display = selectedTryOnItem() ? 'block' : 'none';
 }
 
 function clearFit() {
@@ -9246,9 +9285,10 @@ function renderGrid(){
       ph.src=item.img; ph.loading='lazy';
       ph.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
       swatch.appendChild(ph);
-      var tag=document.createElement('div');
+      var tag=document.createElement('button');
       tag.textContent='AI TRY-ON \u2728';
-      tag.style.cssText='position:absolute;top:8px;left:8px;background:rgba(200,169,110,.92);color:#1A1610;font-size:9px;font-weight:700;letter-spacing:.08em;padding:3px 7px;border-radius:20px;z-index:2';
+      tag.style.cssText='position:absolute;top:8px;left:8px;background:rgba(200,169,110,.92);color:#1A1610;font-size:9px;font-weight:700;letter-spacing:.08em;padding:6px 10px;border-radius:20px;z-index:2;border:none;cursor:pointer;font-family:inherit';
+      tag.addEventListener('click',function(ev){ev.stopPropagation();ev.preventDefault();tryOnWithPhoto(item);});
       swatch.appendChild(tag);
     }
 
@@ -9288,7 +9328,7 @@ function renderGrid(){
       card.addEventListener('click',function(){
         if(alreadyIn)return;
         if(userPhotoData){
-          openAITryOn({id:it.id,n:it.name,name:it.name,desc:it.desc,p:it.price,price:it.price,color:it.color,cat:it.cat});
+          openAITryOn({id:it.id,n:it.name,name:it.name,desc:it.desc,p:it.price,price:it.price,color:it.color,cat:it.cat,img:it.img});
         } else {
           addPiece(it.id);
         }
